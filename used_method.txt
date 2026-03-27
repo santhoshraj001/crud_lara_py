@@ -1,0 +1,196 @@
+| Code                   | Meaning                    |
+| ---------------------- | -------------------------- |
+| `querySelectorAll`     | Select multiple elements   |
+| `addEventListener`     | Listen for user action     |
+| `prompt()`             | Get input from user        |
+| `classList.contains()` | Check clicked element type |
+| `getAttribute()`       | Get data from HTML         |
+| `hours += 12`          | Convert PM → 24-hour       |
+
+
+.remove() for delete
+.setProp() for update
+
+-------------authenticatioin-------------
+Laravel Breeze is a simple authentication starter kit for Laravel.
+
+👉 In short:
+It gives you ready-made login, registration, logout, and 
+password reset features so you don’t have to build them from scratch.
+1)
+composer require laravel/breeze --dev
+php artisan breeze:install                  //we used this breeze for this concept
+npm install && npm run dev
+php artisan migrate
+2)
+AuthenticatedSessionController.php file changes
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        $request->authenticate();
+        $request->session()->regenerate();
+        // return redirect()->intended(route('dashboard', absolute: false));  //THIS IS OLD ONE
+        return redirect()->intended('/std');     //this is main change for after login which will show
+    }
+
+    SHORT WORKING FUNCTION
+🔹 Auth::attempt()
+👉 Check login credentials
+Auth::attempt() = checks if the given email and password are correct
+by comparing them with the database, and if they match, it logs the user in.
+
+🔹 Hash::make()
+👉 Encrypt password
+
+🔹 auth()->user()
+👉 Get current logged user
+
+🔹 middleware('auth')
+👉 Protect routes
+
+🔹 redirect()->intended()
+👉 Redirect after login
+
+
+ users table (Database)
+
+Stores login data:
+
+column	      purpose
+email	   login username
+password   hashed password
+
+Hashed password = a password converted into a secure,
+unreadable string using a one-way encryption process (cannot be reversed back).
+
+login process:
+1.(/register)   // for register the new user then view the registered data on the users table
+2.(/login)      // login with that registered data
+3.(/dashboard)   // dashboard show the registered data and logout and edit option
+
+workflow sample:
+User enters login
+        ↓
+Controller receives data
+        ↓
+Check email in DB
+        ↓
+Check password (Hash)
+        ↓
+If correct → create session
+        ↓
+User logged in
+        ↓
+Middleware allows access
+
+
+pass s@nthosh007
+email santhoshraj001@gmail.com
+
+rajpriya001@gmail.com
+rajpriya001
+
+-------------bearer token method----------------
+1. What is Bearer Token?
+👉 A secret key given after login
+👉 Used to access protected APIs
+Bearer Token = Key to access protected API
+
+workflow:
+Login → Get Token → Use Token → Access API
+
+2. Setup Steps
+✔ Install Sanctum
+composer require laravel/sanctum    ---in cmd
+✔ Publish Migration
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"    ---in cmd
+✔ Run Migration
+php artisan migrate    ---in cmd
+
+👉 Creates:
+
+personal_access_tokens table
+✔ Add in User Model(user.php inside models folder)
+code:
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
+{
+    use HasApiTokens;    //its important for generate token and add generate token line with login Controller
+}
+🔐 3. Login → Generate Token (LoginController.php)
+use Illuminate\Support\Facades\Auth;
+
+public function login(Request $request)
+{
+    if (!Auth::attempt($request->only('email', 'password'))) {
+        return response()->json(['message' => 'Invalid credentials']);
+    }
+
+    $user = Auth::user();
+
+    $token = $user->createToken('api-token')->plainTextToken;  // this is important line for generate token after login
+
+    return response()->json([
+        'token' => $token
+    ]);
+}
+🧪 4. Test Login in Postman
+POST:
+/api/login
+Body:
+{
+  "email": "san@gmail.com",
+  "password": "123456"
+}
+🎉 Output:
+{
+  "token": "1|abc123..."
+}
+🔒 5. Protect Routes
+Route::middleware('auth:sanctum')->get('/profile', function (Request $request) {
+    return $request->user();
+});
+
+Real example:(api.php)
+
+Route::middleware('auth:sanctum')->group(function () {                      //Sanctum = Secure API access using tokens
+Route::get('/std', [PageController::class, 'fetchData']);
+Route::post('/store', [PageController::class, 'store']);
+});
+
+📡 6. Use Token in Postman
+🔹 Headers:
+Authorization: Bearer YOUR_TOKEN
+
+Example:
+
+Authorization: Bearer 1|abc123...
+🧪 7. Call Protected API
+GET /api/std
+✅ With Token:
+{
+  "id": 1,
+  "email": "san@gmail.com"
+}
+❌ Without Token:
+{
+  "message": "Unauthenticated."
+}
+🧠 8. Flow
+Login → Token created → Saved in DB
+Request → Token sent → Verified → Access allowed
+
+
+eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiOWFiNWE0MmE4MjViYmIwNTRjNDI3MjQ0YjgyM2Q0MDE0NTI1NTM0ZjFlZDhhYjM3YTMyYzQ3MjZhOTdhNzBlMDE5MGY3MDY5ZTIyMjg2NjEiLCJpYXQiOjE3NzQzMjUzMDMuNDc0Mjg4LCJuYmYiOjE3NzQzMjUzMDMuNDc0MzEzLCJleHAiOjQ5Mjk5OTg5MDMuNDY2OTA4LCJzdWIiOiIxMDY5Iiwic2NvcGVzIjpbXX0.UI8I3iF6IeZxGBXIkd0lPD4Pd0SEMINVxOdtVCuCrSZsUipSrX173GRiIazNtbkxVx94t7GXCXmg2123AfIumWFvgmaRhweq9O_X113KvcC4k-pTLWIpbQ7XslebhO9OXEeZ3wLhUIjNILF0w5Zu4O2A8C7jktVVkWH4Og2OkJ_nlzDQnSdNCB5KC89Os09cbxPLqnqCwQ3bR2ZrQJTcBn_WgxKqXVHs-idDalQuXs9QSDePZxCVSY-t5tifJFycOCO0VrNaWpWhEGEWZgAQeOVjpxkrY58xafLM2B9lFstJ_zfy2Llrq8R_NqZEw05c7J0_54kf8U7Mzkg_ZQ4eIVtHbkPBqz27xT_Zn-B3tLtIm1J71usRy-ihtoqzGmNXnQYQHTO_h1hxEFAdZygruikttodbAHFpkFrgYB-KvnfY8KxqkbnTkEjwLRDpKb8Fu4d-S27n_wQXA1zE3bVJXQTUzU2C7vKUJ6S4LbGvmtOHSo8aYDFRSeiU77tEe1kQ_ZzXaQbK6dS9t4aBNxdUum2fzIANaRo44v4ZQ40SfOqQwcFpIKdQRmvRFYuQAYBNnQUl6DXDXIm81lFC4H7kkSFqDsi2MZSpn4_WNGBF1m_M4qD38u_0ZQx5Hbm6s8DKPoQiJtbhn7a3Th7rQ3VJP1fzfs5OvvFHayIUEPJht14
+
+
+
+
+    "status": true,
+    "message": "Login successful",
+    "token": "1|wjGimYMEgpZ9bybnIqRrOcR0x32MrFXvGMcYiqSe1f7bca9a"
+
+    3|RSyJ8XUeMTKTd0Ne9aZuyOKCbDXCQEHvNLKZ4J8j6ae858bc
+
+
+freeserver pass = laravel-crud-001(santhoshraj001)
