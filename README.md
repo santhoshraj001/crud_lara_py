@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
@@ -57,3 +58,7 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+=======
+# crud_lara_py
+crud operation with python script for finding salary tax and bonus and showing on the table and then added calendar for adding event. Technology we use in this concept(laravel-python-database with two table-authentication using laravel breeze)
+>>>>>>> 5fb1c8a8832d32a5f63bbe79367a26583d846d99
